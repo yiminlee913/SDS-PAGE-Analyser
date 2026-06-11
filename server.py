@@ -2,7 +2,7 @@ from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
+from PIL import Image, ImageOps
 from pptx import Presentation
 from pptx.util import Inches, Pt, Cm
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
@@ -34,22 +34,33 @@ def read_root():
     return FileResponse("static/index.html")
 
 def detect_bands(marker_image, expected_count):
-    gray_image = marker_image.convert('L')
+    # Auto-contrast to enhance faint bands
+    gray_image = ImageOps.autocontrast(marker_image.convert('L'))
     data = np.array(gray_image)
     row_avgs = np.mean(data, axis=1)
     signal = 255 - row_avgs
     
+    # Smooth signal to reduce noise
     signal = gaussian_filter1d(signal, sigma=2)
+    
+    # Subtract low-frequency background (handles uneven illumination/gradient)
+    bg_sigma = max(15, len(signal) // 10)
+    background = gaussian_filter1d(signal, sigma=bg_sigma)
+    signal = signal - background
+    
+    # Suppress edges
     edge = max(2, int(len(signal) * 0.015))
     signal[:edge] = np.min(signal)
     signal[-edge:] = np.min(signal)
     
-    distance = max(1, len(signal) // (expected_count * 3))
+    distance = max(2, len(signal) // (expected_count * 2.5))
     sig_range = np.max(signal) - np.min(signal)
-    prom_threshold = max(2, sig_range * 0.05)
+    prom_threshold = max(0.1, sig_range * 0.01)
     
     peaks, properties = find_peaks(signal, distance=distance, prominence=prom_threshold)
     prominences = properties['prominences']
+    
+    # Get the top expected_count peaks based on prominence
     sorted_peak_indices = np.argsort(prominences)[::-1]
     top_peaks = peaks[sorted_peak_indices[:expected_count]]
     top_peaks.sort()
