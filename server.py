@@ -69,7 +69,7 @@ def detect_bands(marker_image, expected_count):
 MARKERS = {
     "commercial PAGE": ["170", "130", "93", "72", "53", "42", "30", "23", "14", "10"],
     "15% PAGE": ["180", "75", "60", "45", "35", "25", "15", "10"],
-    "10% PAGE": ["180", "140", "100", "75", "60", "45", "35"]
+    "10% PAGE": ["180", "140", "100", "75", "60", "45", "35", "25"]
 }
 
 def process_page_image(image_file, lanes_str, scale_factor, temp_path):
