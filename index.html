@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDS-PAGE to PPT Web</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="glass-header">
+            <h1>SDS-PAGE Analyzer Pro</h1>
+            <p>Automated Presentation Generator</p>
+        </header>
+
+        <main>
+            <div class="tabs">
+                <button class="tab-btn active" data-target="tab-image">1. 影像處理</button>
+                <button class="tab-btn" data-target="tab-conditions">2. 實驗條件</button>
+                <button class="tab-btn" data-target="tab-yield">3. 產率計算</button>
+            </div>
+
+            <div class="tab-content active" id="tab-image" style="flex-direction: column;">
+                <div class="tabs" style="margin-bottom: 10px;">
+                    <button class="tab-btn sub-tab-btn active" data-target="sub-purify">純化 PAGE</button>
+                    <button class="tab-btn sub-tab-btn" data-target="sub-dialysis">透析 PAGE</button>
+                </div>
+                
+                <div class="sub-tab-content" id="sub-purify" style="display: flex; gap: 20px; flex: 1; min-height: 0;">
+                    <div class="control-panel glass-panel">
+                        <h3>純化 PAGE 匯入</h3>
+                        <div class="form-group">
+                            <label for="image-upload-1" class="upload-btn">選擇純化膠片</label>
+                            <input type="file" id="image-upload-1" accept="image/*" style="display: none;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>選擇 Marker:</label>
+                            <select id="marker-select-1">
+                                <option value="commercial PAGE">commercial PAGE</option>
+                                <option value="15% PAGE">15% PAGE</option>
+                                <option value="10% PAGE">10% PAGE</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label title="若圖片頂端有雜訊，可增加此數值">忽略頂端雜訊 (Shift):</label>
+                            <input type="number" id="ignore-top-1" value="0" min="0" max="5">
+                        </div>
+
+                        <div class="instructions">
+                            <ol>
+                                <li>用滑鼠拖曳畫出框線</li>
+                                <li>輸入 Lane 名稱 (Marker請填M)</li>
+                            </ol>
+                        </div>
+                        
+                        <button id="clear-lanes-btn-1" class="danger-btn">清除所有選取框</button>
+                    </div>
+                    <div class="canvas-panel glass-panel">
+                        <canvas id="image-canvas-1"></canvas>
+                    </div>
+                    <div class="lanes-list-panel glass-panel" id="lanes-list-1">
+                        <h3>已標記 Lane</h3>
+                        <div id="lanes-container-1"></div>
+                    </div>
+                </div>
+
+                <div class="sub-tab-content" id="sub-dialysis" style="display: none; gap: 20px; flex: 1; min-height: 0;">
+                    <div class="control-panel glass-panel">
+                        <h3>透析 PAGE 匯入 (選填)</h3>
+                        <div class="form-group">
+                            <label for="image-upload-2" class="upload-btn">選擇透析膠片</label>
+                            <input type="file" id="image-upload-2" accept="image/*" style="display: none;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>選擇 Marker:</label>
+                            <select id="marker-select-2">
+                                <option value="commercial PAGE">commercial PAGE</option>
+                                <option value="15% PAGE">15% PAGE</option>
+                                <option value="10% PAGE">10% PAGE</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label title="若圖片頂端有雜訊，可增加此數值">忽略頂端雜訊 (Shift):</label>
+                            <input type="number" id="ignore-top-2" value="0" min="0" max="5">
+                        </div>
+
+                        <div class="instructions">
+                            <ol>
+                                <li>用滑鼠拖曳畫出框線</li>
+                                <li>輸入 Lane 名稱 (Marker請填M)</li>
+                            </ol>
+                        </div>
+                        
+                        <button id="clear-lanes-btn-2" class="danger-btn">清除所有選取框</button>
+                    </div>
+                    <div class="canvas-panel glass-panel">
+                        <canvas id="image-canvas-2"></canvas>
+                    </div>
+                    <div class="lanes-list-panel glass-panel" id="lanes-list-2">
+                        <h3>已標記 Lane</h3>
+                        <div id="lanes-container-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-conditions">
+                <div class="glass-panel form-panel">
+                    <h3>PPT 上方實驗條件</h3>
+                    <p class="hint">這些資訊將整齊顯示在簡報圖片正上方</p>
+                    
+                    <div class="form-grid">
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>Protein/ Antibody</label>
+                            <input type="text" id="cond-protein" placeholder="請輸入蛋白名稱">
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>Plasmid</label>
+                            <input type="text" id="cond-plasmid" placeholder="請輸入質體名稱">
+                        </div>
+                        
+                        <div class="input-group" style="grid-column: span 2; margin-top: 10px;">
+                            <label style="color:var(--accent);">Expression System</label>
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>1. E.coli (strain)</label>
+                            <input type="text" id="cond-ecoli" placeholder="例如: BL21(DE3)">
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>2. HEK293 (transient/stable)</label>
+                            <input type="text" id="cond-hek293" placeholder="例如: Transient">
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>3. CHO (transient/stable batch/fed batch)</label>
+                            <input type="text" id="cond-cho" placeholder="例如: Stable fed-batch">
+                        </div>
+
+                        <div class="input-group" style="grid-column: span 2; margin-top: 10px;">
+                            <label style="color:var(--accent);">Purification Strategy</label>
+                        </div>
+                        <div class="input-group">
+                            <label>Volume (L)</label>
+                            <input type="number" id="cond-vol-l" placeholder="數值" step="0.001">
+                            <small>將用於計算產率</small>
+                        </div>
+                        <div class="input-group">
+                            <label>Binding 方式</label>
+                            <select id="cond-binding-type">
+                                <option value="磁珠 (Ni-smart)">磁珠 (Ni-smart)</option>
+                                <option value="磁珠 (Protein A)">磁珠 (Protein A)</option>
+                                <option value="磁珠 (Protein G)">磁珠 (Protein G)</option>
+                                <option value="管柱 (Ni-smart)">管柱 (Ni-smart)</option>
+                                <option value="管柱 (Protein A)">管柱 (Protein A)</option>
+                                <option value="管柱 (Protein G)">管柱 (Protein G)</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>磁珠體積/binding時間</label>
+                            <input type="text" id="cond-binding-detail" placeholder="例如: 500uL / 2hrs">
+                        </div>
+                        <div class="input-group">
+                            <label>Wash (buffer/體積/次數)</label>
+                            <input type="text" id="cond-wash" placeholder="例如: PBS / 10ml / 3次">
+                        </div>
+                        <div class="input-group">
+                            <label>Elute (buffer)</label>
+                            <input type="text" id="cond-elute" placeholder="例如: Imidazole 300mM">
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>Dialysis buffer</label>
+                            <input type="text" id="cond-dialysis" placeholder="例如: 1x PBS, pH 7.4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-yield">
+                <div class="glass-panel form-panel">
+                    <h3>各樣本產率計算</h3>
+                    <p class="hint">程式會根據您在「實驗條件」輸入的體積自動換算 mg/L</p>
+                    
+                    <div class="table-container">
+                        <table id="yield-table">
+                            <thead>
+                                <tr>
+                                    <th>樣本名稱</th>
+                                    <th>濃度 (mg/mL)</th>
+                                    <th>體積 (mL)</th>
+                                    <th>總量 (mg)</th>
+                                    <th>產率 (mg/L)</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="yield-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button id="add-row-btn" class="secondary-btn">+ 新增樣本</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="glass-footer">
+            <button id="generate-btn" class="primary-btn">產出 PPT 簡報檔</button>
+            <div id="loading-indicator" class="hidden">處理中，請稍候...</div>
+        </footer>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
